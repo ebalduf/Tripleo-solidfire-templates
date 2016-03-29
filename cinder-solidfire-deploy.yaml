@@ -23,21 +23,6 @@ resources:
       config: { get_resource: CinderSolidFireSoftwareConfig }
       server: { get_param: server}
 
-  CinderRestartConfig:
-    type: OS::Heat::SoftwareConfig
-    properties:
-      config: |
-        #!/bin/sh
-        sudo pcs resource restart openstack-cinder-volume
-
-  CinderRestartDeployment:
-    type: OS::Heat::SoftwareDeployments
-    depends_on: CinderSolidFireSoftwareDeploy
-    properties:
-      servers: {get_param: server}
-      config: {get_resource: CinderRestartConfig}
-      actions: ['CREATE','UPDATE']
-
 outputs:
   deploy_stdout:
     description: Deployment reference, used to trigger puppet apply on changes
