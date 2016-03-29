@@ -1,0 +1,44 @@
+heat_template_version: 2015-04-30
+
+description: Configure hieradata for Cinder SolidFire configuration
+
+parameters:
+  server:
+    description: ID of the controller node to apply this config to
+    type: string
+
+resources:
+  CinderSolidFireSoftwareConfig:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      config: { get_file: cinder-solidfire-puppet.pp }
+      group: puppet
+      options:
+        enable_hiera: True
+        enable_facter: False
+
+  CinderSolidFireSoftwareDeploy:
+    type: OS::Heat::SoftwareDeployment
+    properties:
+      config: { get_resource: CinderSolidFireSoftwareConfig }
+      server: { get_param: server}
+
+  CinderRestartConfig:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      config: |
+        #!/bin/sh
+        sudo pcs resource restart openstack-cinder-volume
+
+  CinderRestartDeployment:
+    type: OS::Heat::SoftwareDeployments
+    depends_on: CinderSolidFireSoftwareDeploy
+    properties:
+      servers: {get_param: server}
+      config: {get_resource: CinderRestartConfig}
+      actions: ['CREATE','UPDATE']
+
+outputs:
+  deploy_stdout:
+    description: Deployment reference, used to trigger puppet apply on changes
+    value: {get_attr: [CinderSolidFireSoftwareDeploy, deploy_stdout]}

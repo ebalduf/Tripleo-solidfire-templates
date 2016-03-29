@@ -1,0 +1,21 @@
+# A Heat environment file which can be used to enable a
+# a Cinder SolidFire backend, configured via puppet
+#resource_registry:
+#  OS::TripleO::ControllerExtraConfigPre: /home/stack/templates/cinder-solidfire-deploy.yaml
+
+resource_registry:
+  OS::Tripleo::NodeExtraConfigPost: /home/stack/templates/cinder-solidfire-deploy-after.yaml
+
+parameter_defaults:
+  controllerExtraConfig:
+    cinder::backend::solidfire::san_ip: 172.27.1.50
+    cinder::backend::solidfire::san_login: admin
+    cinder::backend::solidfire::san_password: solidfire
+    cinder::backend::solidfire::sf_account_prefix:
+    cinder::backend::solidfire::sf_allow_tenant_qos: false
+    cinder::backend::solidfire::sf_api_port: 443
+    cinder::backend::solidfire::sf_emulate_512: true
+    cinder::backend::solidfire::title: tripleo_solidfire
+    cinder_enable_solidfire_backend: true
+    cinder_user_enabled_backends: 
+      - tripleo_solidfire
