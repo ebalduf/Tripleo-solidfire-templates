@@ -1,18 +1,18 @@
 heat_template_version: 2015-04-30
-
 description: Configure hieradata for Cinder SolidFire configuration
 
 parameters:
   servers:
-    description: ID of the controller node to apply this config to
     type: json
 
 resources:
+
   CinderSolidFireSoftwareConfig:
     type: OS::Heat::SoftwareConfig
     properties:
-      config: { get_file: /home/stack/templates/cinder-solidfire-puppet.pp }
       group: puppet
+      config:
+        get_file: /home/stack/templates/cinder-solidfire-puppet.pp
       options:
         enable_hiera: True
         enable_facter: False
@@ -20,16 +20,17 @@ resources:
   CinderSolidFireSoftwareDeploy:
     type: OS::Heat::SoftwareDeployments
     properties:
-      config: { get_resource: CinderSolidFireSoftwareConfig }
       servers: { get_param: servers}
-      actions: ['CREATE','UPDATE']
+      config: { get_resource: CinderSolidFireSoftwareConfig }
 
   CinderRestartConfig:
     type: OS::Heat::SoftwareConfig
     properties:
       config: |
         #!/bin/sh
-        sudo pcs resource restart openstack-cinder-volume
+        if [ `hostname -s` == "overcloud-controller-0" ]; then
+          sudo pcs resource restart openstack-cinder-volume
+        fi
 
   CinderSolidFireRestartDeployment:
     type: OS::Heat::SoftwareDeployments
@@ -38,8 +39,3 @@ resources:
       servers: {get_param: servers}
       config: {get_resource: CinderRestartConfig}
       actions: ['CREATE','UPDATE']
-
-outputs:
-  deploy_stdout:
-    description: Deployment reference, used to trigger puppet apply on changes
-    value: {get_attr: [CinderSolidFireRestartDeployment, deploy_stdout]}

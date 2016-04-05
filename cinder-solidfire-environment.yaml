@@ -6,7 +6,9 @@
 resource_registry:
   OS::Tripleo::NodeExtraConfigPost: /home/stack/templates/cinder-solidfire-deploy-after.yaml
 
-parameter_defaults:
+#parameter_defaults:
+
+parameters:
   controllerExtraConfig:
     cinder::backend::solidfire::san_ip: 172.27.1.50
     cinder::backend::solidfire::san_login: admin
